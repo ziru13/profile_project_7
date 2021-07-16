@@ -1,0 +1,11 @@
+{% extends 'layout.html' %}
+
+{%  block body %}
+    <form action="" method="POST">
+        {% csrf_token %}
+        {{ user_form.as_p }}
+        {{ profile_form.as_p }}
+        <button type="submit"><a href="{% url 'accounts:profile' user_pk=user.pk %}">Back</a></button>
+        <button type="submit">Save</button>
+    </form>
+{%  endblock %}

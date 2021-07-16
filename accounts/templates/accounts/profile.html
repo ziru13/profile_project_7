@@ -1,0 +1,37 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <div class="grid-75">
+        <h1>My Profile!</h1>
+    </div>
+    <div class="grid-75">
+        <table>
+            <tbody>
+                <tr>
+                    <td>First Name:</td>
+                    <td>{{ user.first_name }}</td>
+                </tr>
+                <tr>
+                    <td>Last Name:</td>
+                    <td>{{ user.last_name }}</td>
+                </tr>
+                <tr>
+                    <td>Birth Date:</td>
+                    <td>{{ user.profile.birth_date }}</td>
+                </tr>
+                <tr>
+                    <td>Email:</td>
+                    <td>{{ user.email }}</td>
+                </tr>
+                <tr>
+                    <td>Bio:</td>
+                    <td>{{ user.profile.short_bio }}</td>
+                </tr>
+            </tbody>
+        </table>
+    
+        {% if user.is_authenticated %}
+            <button type="submit"><a href="{% url 'accounts:edit' user_pk=user.pk %}">Edit</a></button>
+        {% endif %}
+    </div>
+{% endblock %}

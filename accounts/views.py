@@ -1,9 +1,15 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.core.urlresolvers import reverse
+from django.db import transaction
+from django.urls import reverse
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+
+from django.contrib.auth.models import User
+
+from . import forms, models
 
 
 def sign_in(request):
@@ -54,3 +60,37 @@ def sign_out(request):
     logout(request)
     messages.success(request, "You've been signed out. Come back soon!")
     return HttpResponseRedirect(reverse('home'))
+
+
+# Create your views here.
+@login_required
+def profile(request, user_pk):
+    user = User.objects.get(pk=user_pk)
+    profile = get_object_or_404(models.Profile)
+    user.birth_date = user.profile.birth_date
+    user.confirm_email = user.profile.confirm_email
+    user.short_bio = user.profile.short_bio
+    return render(request, 'accounts/profile.html', {'user': user,
+                                                     'profile': profile})
+
+
+@login_required
+@transaction.atomic
+def edit(request, user_pk):
+    user = User.objects.get(pk=user_pk)
+    if request.method == 'POST':
+        user_form = forms.UserForm(request.POST, instance=request.user)
+        profile_form = forms.ProfileForm(request.POST, instance=request.user.profile)
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Your profile was successfully updated!')
+            return redirect('accounts:profile', user_pk=user.pk)  # 要表明user_pk
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        user_form = forms.UserForm(instance=request.user)
+        profile_form = forms.ProfileForm(instance=request.user.profile)
+    return render(request, 'accounts/edit.html', {'user': user,
+                                                  'user_form': user_form,
+                                                  'profile_form': profile_form})
